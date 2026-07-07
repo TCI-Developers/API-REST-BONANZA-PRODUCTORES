@@ -10,7 +10,6 @@ export class BeneficiariosController {
 
   
 
-  @UseGuards(AuthGuard)
   @Get('list')
   findAll(@Query() filter: BeneficiarioFilterDTO) {
     return this.beneficiariosService.findAll(filter);
