@@ -1,9 +1,9 @@
 import { Controller, Get, Param, UseGuards, Query } from '@nestjs/common';
 import { BeneficiariosService } from './beneficiarios.service';
-import { AuthGuard } from 'src/auth/auth.guard';
-
+import { BlockedGuard } from 'src/auth/blocked.guard';
 import { BeneficiarioFilterDTO } from './dto/beneficiario-filter.dto';
 
+@UseGuards(BlockedGuard)
 @Controller('beneficiarios')
 export class BeneficiariosController {
   constructor(private readonly beneficiariosService: BeneficiariosService) {}

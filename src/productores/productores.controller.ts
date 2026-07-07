@@ -1,8 +1,9 @@
 import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { ProductoresService } from './productores.service';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { BlockedGuard } from 'src/auth/blocked.guard';
 import { ProductorFilterDTO } from './dto/productores-filter.dto';
 
+@UseGuards(BlockedGuard)
 @Controller('productores')
 export class ProductoresController {
 

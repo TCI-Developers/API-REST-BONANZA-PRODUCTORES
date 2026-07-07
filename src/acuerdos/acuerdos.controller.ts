@@ -1,8 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { AcuerdosService } from './acuerdos.service';
 import { CreateAcuerdoDto } from './dto/create-acuerdo.dto';
 import { UpdateAcuerdoDto } from './dto/update-acuerdo.dto';
+import { BlockedGuard } from 'src/auth/blocked.guard';
 
+@UseGuards(BlockedGuard)
 @Controller('acuerdos')
 export class AcuerdosController {
   constructor(private readonly acuerdosService: AcuerdosService) {}

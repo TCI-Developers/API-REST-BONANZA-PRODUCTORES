@@ -1,8 +1,9 @@
 import { Controller, Get, Param, Query, UseGuards, } from '@nestjs/common';
 import { RecosService } from './recos.service';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { BlockedGuard } from 'src/auth/blocked.guard';
 import { RecoFilterDTO } from './dto/reco-filter.dto';
 
+@UseGuards(BlockedGuard)
 @Controller('recos')
 export class RecosController {
   

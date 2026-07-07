@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { HuertasService } from './huertas.service';
 import { AuthService } from 'src/auth/auth.service';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { BlockedGuard } from 'src/auth/blocked.guard';
 import { HuertasFilterDTO } from './dto/huertas-filter.dto';
 
+@UseGuards(BlockedGuard)
 @Controller('huertas')
 export class HuertasController {
 

@@ -1,8 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { CorridasService } from './corridas.service';
-import { CreateCorridaDto } from './dto/create-corrida.dto';
-import { UpdateCorridaDto } from './dto/update-corrida.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('corridas')
 export class CorridasController {
   constructor(private readonly corridasService: CorridasService) {}
