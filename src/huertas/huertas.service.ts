@@ -1,8 +1,16 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { QuickbaseClient } from 'src/integrations/quickbase/quickbase.client';
-import { HUERTAS_FIELD_MAP } from './huertas.map';
+import { HUERTAS_FIELD_MAP } from './mappers/huertas.map';
 import { HuertaDTO } from './dto/huerta.dto'
 import { QuickbaseMapper } from 'src/shared/mappers/quickbase.mapper';
+import { HuertasFilterDTO } from './dto/huertas-filter.dto';
+import { HuertasRepository } from './repository/huertas.repository';
+import { QuickbaseWhereBuilder } from 'src/integrations/builders/quickbase-where.builder';
+import { HUERTAS_FILTER_MAP } from './mappers/huertas-filter.map';
+import { QuickbaseQueryBuilder } from 'src/integrations/builders/quickbase-query.builder';
+import { PaginationUtil } from 'src/shared/pagination/pagination.util';
+
+
 
 @Injectable()
 export class HuertasService {
@@ -10,49 +18,80 @@ export class HuertasService {
 
 private tableId = process.env.QUICKBASE_TABLE_HUERTAS;
 
-constructor( private readonly qb: QuickbaseClient, private readonly mapper : QuickbaseMapper ){}
+constructor( 
+  private readonly qb: QuickbaseClient, 
+  private readonly mapper : QuickbaseMapper,
+  private readonly huertasRepository: HuertasRepository
+){}
 
 async findOne( sagarpa: string) {
 
-  const response = await this.qb.query( this.tableId!, {
+  const where = new QuickbaseWhereBuilder().build({sagarpa},HUERTAS_FILTER_MAP);
 
-    select: Object.keys(HUERTAS_FIELD_MAP).map(Number),
-    where: `{7.EX.'${sagarpa}'}`,
-  
-   });
+  const query = new QuickbaseQueryBuilder()
+    .table( this.tableId!)
+    .fields(HUERTAS_FIELD_MAP)
+    .where(where)
+    .page(1,1)
+    .build();
 
-   const registros = this.mapper.toDomain<HuertaDTO>(
+  const response = await this.huertasRepository.getHuertas(query);
+
+  const huertas = this.mapper.toDomain<HuertaDTO>(
     response,
     HUERTAS_FIELD_MAP
-   );
+  );
 
-  if (!registros.length) {
+  if (!huertas.length) {
     throw new NotFoundException(
-      `Huerta No Existe: ${sagarpa}`,
+      `Sagarpa No Existe: ${sagarpa}`,
     );
   }
-
-    return registros ;
+    
+  return huertas;
 }
 
-async getPaginated( page:number, limit: number) {
-  
-  const offset = (page - 1) * limit;
+async findAll( filter: HuertasFilterDTO) {
 
-  const res = await this.qb.query(this.tableId!,{
-    select: [7,6,254,255],
-    options: {
-      skip: offset,
-      top: limit,
-    }
-    
-  });
+  const page = filter.page ?? 1;
+  const limit = filter.limit ?? 20;
 
-  return {
-    page, 
-    limit, 
-    data: res?.data || [],
-  } 
+  if (filter.fecha_desde && !filter.fecha_hasta) {
+      filter.fecha_hasta = filter.fecha_desde;     
+     }
+
+
+  const where = new QuickbaseWhereBuilder().build(
+    filter,
+    HUERTAS_FILTER_MAP,
+  );
+
+  //console.log(filter);
+  //console.log(where);
+
+  const query = new QuickbaseQueryBuilder()
+    .table(this.tableId!)
+    .fields(HUERTAS_FIELD_MAP)
+    .where(where)
+    .sort(9,'ASC')
+    .page(page, limit)
+    .build();
+
+  const response = await this.huertasRepository.getHuertas(query);
+
+  const huertas = this.mapper.toDomain<HuertaDTO>(
+    response,
+    HUERTAS_FIELD_MAP,
+  );
+
+   return PaginationUtil.build(
+    huertas,
+    response.metadata.totalRecords,
+    page,
+    limit,
+    '/api/tci/huertas/list',
+    filter
+   );
 }
 
 async create(data: any) {

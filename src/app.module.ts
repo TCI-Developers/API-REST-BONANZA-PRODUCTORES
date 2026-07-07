@@ -10,13 +10,16 @@ import { LotesModule } from './lotes/lotes.module';
 import { RecosModule } from './recos/recos.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { BeneficiariosModule } from './beneficiarios/beneficiarios.module';
+import { CorridasModule } from './corridas/corridas.module';
+import { AcuerdosModule } from './acuerdos/acuerdos.module';
 
 @Module({
   imports: [ 
      ConfigModule.forRoot({
       isGlobal: true,
     }),
-    HttpModule,HuertasModule, ProductoresModule, QuickbaseModule, SharedModule, LotesModule, RecosModule, AuthModule, UsersModule],
+    HttpModule,HuertasModule, ProductoresModule, QuickbaseModule, SharedModule, LotesModule, RecosModule, AuthModule, UsersModule, BeneficiariosModule, CorridasModule, AcuerdosModule],
   exports:[QuickbaseClient],
   controllers: [],
   providers: [QuickbaseClient],

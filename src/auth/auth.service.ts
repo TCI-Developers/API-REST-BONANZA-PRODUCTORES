@@ -14,11 +14,7 @@ export class AuthService {
             throw new UnauthorizedException();
          }
 
-         console.log('DATA' + user.username);
-
          const playload = { id: user.userId, username: user.username };
-
-    
 
          return {
             access_token: await this.jwtService.signAsync(playload),

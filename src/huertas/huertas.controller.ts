@@ -1,27 +1,25 @@
-import { Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
 import { HuertasService } from './huertas.service';
+import { AuthService } from 'src/auth/auth.service';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { HuertasFilterDTO } from './dto/huertas-filter.dto';
 
 @Controller('huertas')
 export class HuertasController {
 
-  constructor(private readonly huertasService: HuertasService) {}
-
-  @Get(':sagarpa')
+  constructor(private readonly huertasService: HuertasService, private readonly authService: AuthService) {}
+  
+  @UseGuards(AuthGuard)
+  @Get('sagarpa/:sagarpa')
   getAll(@Param('sagarpa') sagarpa: string) {
     return this.huertasService.findOne(sagarpa);
   }
 
-  @Get('paginated')
-    getPaginated(
-      @Query('page') page = 1,
-      @Query('limit') limit = 10,
-    ) {
-    return this.huertasService.getPaginated(Number(page), Number(limit));
+  @UseGuards(AuthGuard)
+  @Get('list')
+  getPaginated( @Query()  filter: HuertasFilterDTO) {
+    return this.huertasService.findAll(filter);
   }
 
-  @Post()
-  create(@Body() body: any) {
-    return this.huertasService.create(body);
-  }
 
 }

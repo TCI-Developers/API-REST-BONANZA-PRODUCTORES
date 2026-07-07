@@ -1,8 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { QuickbaseClient } from 'src/integrations/quickbase/quickbase.client';
+import { BadRequestException, Injectable, Query } from '@nestjs/common';
 import { QuickbaseMapper } from 'src/shared/mappers/quickbase.mapper';
-import { LOTES_FIELD_MAP } from './lotes.map';
+import { LOTES_FIELD_MAP } from './mapper/lotes.map';
 import { LotesDTO } from './dto/lotes.dto';
+import { QuickbaseWhereBuilder } from 'src/integrations/builders/quickbase-where.builder';
+import { QuickbaseQueryBuilder } from 'src/integrations/builders/quickbase-query.builder';
+import { LotesRepository } from './repository/lotes.repository';
+import { PaginationUtil } from 'src/shared/pagination/pagination.util';
+import { RelationUtil } from 'src/shared/utils/relation.util';
+import { LOTES_FILTER_MAP } from './mapper/lotes-filter.map';
+import { LotesFilterDTO } from './dto/lotes-filter.dto';
+import { CorridasService } from 'src/corridas/corridas.service';
+import { isEmpty } from 'class-validator';
+
 
 @Injectable()
 export class LotesService {
@@ -10,77 +19,108 @@ export class LotesService {
   private tableId = process.env.QUICKBASE_TABLE_LOTES;
 
   constructor(
-    private readonly qb: QuickbaseClient,
-    private readonly mapper : QuickbaseMapper
+    private readonly mapper : QuickbaseMapper,
+    private readonly corridasService : CorridasService,
+    private readonly lotesRepository: LotesRepository
   ){}
 
-  async getLotes(rfc: string, fecha_corte_desde?: string, fecha_corte_hasta?: string) {
+  async findOne(loteId: string){
 
-    if (!rfc?.trim()) {
-      throw new BadRequestException('El parametro "rfc" es obligatorio ');
+    if (isEmpty(loteId)) {
+      throw new BadRequestException(' El parametro "no_lote" es obligatorio');
     }
 
-    const filters:string[] = [];
+    const where = new QuickbaseWhereBuilder().build({ loteId }, LOTES_FILTER_MAP );
+    
+    const query = new QuickbaseQueryBuilder()
+      .table(this.tableId!)
+      .fields(LOTES_FIELD_MAP)
+      .where(where)
+      .build();
 
-    //RFC Obligarorio
-    filters.push(`{781.EX.'${rfc}'}`);
-   
-    //Verificar que vengan ambas fechas
-  if (fecha_corte_desde || fecha_corte_hasta) {
-    if (!fecha_corte_desde || !fecha_corte_hasta) {
-      throw new BadRequestException('Debes enviar fecha_corte_desde y fecha_corte_hasta');
-    }
-
-    filters.push(`{324.GTE.'${fecha_corte_desde}'}`);
-    filters.push(`{324.LTE.'${fecha_corte_hasta}'}`);
-  }
-
-  const where = filters.join('AND');
-
-    const response = await this.qb.query( this.tableId!,{
-      select: Object.keys(LOTES_FIELD_MAP).map(Number),
-      where,
-    });
+    const response = await this.lotesRepository.getLotes(query);
 
     const lotes = this.mapper.toDomain<LotesDTO>(
       response,
-      LOTES_FIELD_MAP,
+      LOTES_FIELD_MAP
     );
 
-    return { 
-      total: lotes.length,
-      lotes,
 
-     };
+    const ids = lotes.map(x => Number(x.lote_id));
+    const corridas = await this.corridasService.findByLotesIds(ids);
+
+    const mapaCorridas = RelationUtil.groupBy(
+      corridas,
+      'lote_id'
+    );
+     const resultado = lotes.map(lote =>({
+      lote,
+      corrida: mapaCorridas.get(Number(lote.lote_id))?? []
+     }))
+
+    return resultado;
+
 
   }
 
+  async findAll(filter: LotesFilterDTO) {
 
-  async getPaginated( rfc: string, page:number, limit: number) {
-  
-  const offset = (page - 1) * limit;
-
-
-  const response = await this.qb.query(this.tableId!,{
-    select: Object.keys(LOTES_FIELD_MAP).map(Number),
-    options: {
-      skip: offset,
-      top: limit,
+  /* if (!filter.rfc?.trim()) {
+      throw new BadRequestException('El parametro "rfc" es obligatorio ');
     }
-    
-  });
+  */
 
-  const lotes = this.mapper.toDomain<LotesDTO>(
-    response,
-    LOTES_FIELD_MAP,
+    //Verificar que vengan ambas fechas o almenos la fecha inicial
+    if (filter.fecha_desde && !filter.fecha_hasta) {
+        filter.fecha_desde = filter.fecha_desde;
+    }
+
+
+  const where = new QuickbaseWhereBuilder().build(
+    filter ,
+    LOTES_FILTER_MAP
   )
 
 
-  return {
-    page, 
-    limit, 
-    data: lotes || [],
-  } 
-}
+    const query = new QuickbaseQueryBuilder()
+    .table(this.tableId!)
+    .fields(LOTES_FIELD_MAP)
+    .where(where)
+    .sort(6,'ASC')
+    .page(filter.page, filter.limit)
+    .build();
+
+    const response = await this.lotesRepository.getLotes(query);
+
+    const lotes = this.mapper.toDomain<LotesDTO>(
+      response,
+      LOTES_FIELD_MAP
+    );
+
+
+    /*const ids = lotes.map(x => Number(x.lote_id));
+    const corridas = await this.corridasService.findByLotesIds(ids);
+
+    const mapaCorridas = RelationUtil.groupBy(
+      corridas,
+      'lote_id'
+    );
+     const resultado = lotes.map(lote =>({
+      lote,
+      corrida: mapaCorridas.get(Number(lote.lote_id))?? []
+     }))*/
+
+    return PaginationUtil.build(
+      lotes,
+      response.metadata.totalRecords,
+      filter.page,
+      filter.limit,
+      '/api/tci/lotes/list',
+      filter
+    ); 
+    
+
+  }
+
 
 }

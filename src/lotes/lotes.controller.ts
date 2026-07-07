@@ -1,18 +1,32 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
 import { LotesService } from './lotes.service';
-import { CreateLoteDto } from './dto/create-lote.dto';
-import { UpdateLoteDto } from './dto/update-lote.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
+import { LotesFilterDTO } from './dto/lotes-filter.dto';
 
 @Controller('lotes')
 export class LotesController {
   constructor(private readonly lotesService: LotesService) {}
 
 
-@Get()
-getLotes( @Query('rfc') rfc: string, @Query('fecha_corte_desde') inicio?: string, @Query('fecha_corte_hasta') fin?: string,) {
- 
-  return this.lotesService.getLotes(rfc, inicio, fin);
+
+@UseGuards(AuthGuard)
+@Get('folio/:lote')
+getLotes(@Param('lote') lote: string) {
+
+  return this.lotesService.findOne( lote );
 
 }
-  
+
+@UseGuards(AuthGuard)
+@Get('list')
+getAllLotes( 
+@Query() filter: LotesFilterDTO) {
+ 
+  return this.lotesService.findAll(filter);
+
+}
+
+
+
+
 }
