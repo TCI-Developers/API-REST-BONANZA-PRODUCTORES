@@ -10,13 +10,11 @@ export class HuertasController {
 
   constructor(private readonly huertasService: HuertasService, private readonly authService: AuthService) {}
   
-  @UseGuards(AuthGuard)
   @Get('sagarpa/:sagarpa')
   getAll(@Param('sagarpa') sagarpa: string) {
     return this.huertasService.findOne(sagarpa);
   }
 
-  @UseGuards(AuthGuard)
   @Get('list')
   getPaginated( @Query()  filter: HuertasFilterDTO) {
     return this.huertasService.findAll(filter);

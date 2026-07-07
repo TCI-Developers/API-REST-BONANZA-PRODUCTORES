@@ -9,21 +9,18 @@ export class ProductoresController {
 
 constructor(private readonly productoresService: ProductoresService) {}
 
-@UseGuards(AuthGuard)
 @Get('rfc/:rfc')
 findOne(@Param('rfc') rfc: string) {
   return this.productoresService.findOne(rfc);
   }
 
-@UseGuards(AuthGuard)
 @Get('list')
 getAll( @Query() filter: ProductorFilterDTO) {
- 
+
   return this.productoresService.findAll( filter);
 
 }
 
-@UseGuards(AuthGuard)
 @Get('list/sync')
 getAllModifid( 
   @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,

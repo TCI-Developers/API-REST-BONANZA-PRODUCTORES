@@ -9,7 +9,6 @@ export class RecosController {
   
   constructor(private readonly recosService: RecosService) {}
 
-  @UseGuards(AuthGuard)
   @Get('folio/:reco')
   findOne(@Param('reco') reco: string ) {
     return this.recosService.findOne(reco);
