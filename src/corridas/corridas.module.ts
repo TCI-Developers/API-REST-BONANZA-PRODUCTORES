@@ -5,9 +5,10 @@ import { QuickBaseRepository } from 'src/integrations/quickbase/quickbase.reposi
 import { CorridaRepository } from './repository/corrida.repository';
 import { SharedModule } from 'src/shared/shared.module';
 import { QuickbaseModule } from 'src/integrations/quickbase/quickbase.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [QuickbaseModule,SharedModule],
+  imports: [AuthModule,QuickbaseModule,SharedModule],
   controllers: [CorridasController],
   providers: [CorridasService, QuickBaseRepository,CorridaRepository],
   exports:[CorridasService]

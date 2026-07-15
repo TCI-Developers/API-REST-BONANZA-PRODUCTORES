@@ -10,10 +10,4 @@ export const BENEFICIARIO_FIELD_MAP = {
     '48':   'activo',
     '47':   'fecha_modificacion',
 
-
-
-
-
-
-
 }

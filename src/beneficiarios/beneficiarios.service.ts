@@ -20,8 +20,8 @@ export class BeneficiariosService {
 
 
   async findAll( filter: BeneficiarioFilterDTO) {
+   
     //verificar que venga almenos la primer fecha
-
     if( filter.fecha_desde && !filter.fecha_hasta){
       filter.fecha_hasta = filter.fecha_hasta;
     }

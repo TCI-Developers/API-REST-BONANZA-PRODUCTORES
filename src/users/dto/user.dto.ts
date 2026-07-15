@@ -1,5 +1,5 @@
-export interface UserDTO {
-    userId: number;
-    username: string;
-    password: string;
+export class UserDTO {
+    userId!: number;
+    username!: string;
+    password!: string;
 }

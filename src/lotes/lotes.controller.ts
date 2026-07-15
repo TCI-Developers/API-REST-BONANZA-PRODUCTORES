@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, NotFoundException, Param, Query, UseGuards } from '@nestjs/common';
 import { LotesService } from './lotes.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { LotesFilterDTO } from './dto/lotes-filter.dto';
@@ -7,26 +7,20 @@ import { LotesFilterDTO } from './dto/lotes-filter.dto';
 export class LotesController {
   constructor(private readonly lotesService: LotesService) {}
 
-
-
 @UseGuards(AuthGuard)
 @Get('folio/:lote')
-getLotes(@Param('lote') lote: string) {
+async getLotes(@Param('lote') lote: string) {
+ 
+   throw new NotFoundException();
 
-  return this.lotesService.findOne( lote );
-
+ // return this.lotesService.findOne( lote );
 }
 
 @UseGuards(AuthGuard)
 @Get('list')
-getAllLotes( 
-@Query() filter: LotesFilterDTO) {
+async getAllLotes( @Query() filter: LotesFilterDTO) {
  
   return this.lotesService.findAll(filter);
 
-}
-
-
-
-
+ }
 }

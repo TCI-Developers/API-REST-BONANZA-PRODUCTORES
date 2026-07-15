@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards, Query } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards, Query, NotFoundException } from '@nestjs/common';
 import { BeneficiariosService } from './beneficiarios.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
@@ -12,13 +12,16 @@ export class BeneficiariosController {
 
   @UseGuards(AuthGuard)
   @Get('list')
-  findAll(@Query() filter: BeneficiarioFilterDTO) {
+  async findAll(@Query() filter: BeneficiarioFilterDTO) {
     return this.beneficiariosService.findAll(filter);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.beneficiariosService.findOne(+id);
+   async findOne(@Param('id') id: string) {
+    
+    throw new NotFoundException();
+
+    //return this.beneficiariosService.findOne(+id);
   }
 
 }

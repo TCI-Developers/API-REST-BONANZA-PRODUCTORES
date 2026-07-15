@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, NotFoundException } from '@nestjs/common';
 import { HuertasService } from './huertas.service';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthGuard } from 'src/auth/auth.guard';
@@ -11,13 +11,16 @@ export class HuertasController {
   
   @UseGuards(AuthGuard)
   @Get('sagarpa/:sagarpa')
-  getAll(@Param('sagarpa') sagarpa: string) {
-    return this.huertasService.findOne(sagarpa);
+  async getAll(@Param('sagarpa') sagarpa: string) {
+   
+    throw new NotFoundException();
+
+    // return this.huertasService.findOne(sagarpa);
   }
 
   @UseGuards(AuthGuard)
   @Get('list')
-  getPaginated( @Query()  filter: HuertasFilterDTO) {
+  async getPaginated( @Query()  filter: HuertasFilterDTO) {
     return this.huertasService.findAll(filter);
   }
 

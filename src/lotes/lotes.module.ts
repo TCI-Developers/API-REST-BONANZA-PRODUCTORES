@@ -7,11 +7,11 @@ import { AuthModule } from 'src/auth/auth.module';
 import { LotesRepository } from './repository/lotes.repository';
 import { QuickBaseRepository } from '../integrations/quickbase/quickbase.repository';
 import { CorridasModule } from 'src/corridas/corridas.module';
-import { CorridasService } from '../corridas/corridas.service';
+import { LotesMapper } from './mapper/lotes.mapper';
 
 @Module({
   imports:[QuickbaseModule,SharedModule,AuthModule,CorridasModule],
   controllers: [LotesController],
-  providers: [LotesService,QuickBaseRepository,LotesRepository],
+  providers: [LotesService,QuickBaseRepository,LotesRepository,LotesMapper],
 })
 export class LotesModule {}
